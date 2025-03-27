@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Students</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #2cb3d5, #2cb3d5);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            color: black;
+            padding: 20px;
+            margin: auto;
+            width: 70%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            text-align: center;
+        }
+        th {
+            background: #a93364;
+            color: white;
+        }
+        button {
+            background-color: red;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: darkred;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 90%;
+        }
+        .add-student {
+            width: 200px; 
+            height: 40px; 
+            font-size: 16px; 
+        }
+
+        .view-students {
+            position: absolute; 
+            bottom: 110px; 
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: blue;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .add-student:hover {
+            background-color: darkgreen;
+        }
+        
+        select {
+            width: 92%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 2px solid #ccc; 
+            border-radius: 5px; 
+            font-size: 13px; 
+            background-color: white; 
+            cursor: pointer;
+        }
+
+       
+        select:hover {
+            border-color: #007bff; 
+        }
+
+        
+        select:focus {
+            border-color: #0056b3; 
+            outline: none;
+        }
+
+        
+        #registerButton {
+            display: block;
+            width: 92%;
+            background-color: red;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #registerButton:hover {
+            background-color: darkred;
+        }
+
+       
+        #viewStudentsButton {
+            display: block;
+            width: 100%;
+            background-color: blue;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+       
+        #viewStudentsButton:hover {
+            background-color: darkblue;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Event Registration</h2>
+        <form id="studentForm">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="text" id="phone" placeholder="Phone" required>
+            <input type="text" id="college" placeholder="College" required>
+            
+            <select id="department" required>
+                <option value="" disabled selected>Choose a Department</option>
+                <option value="CSE">CSE</option>
+                <option value="IT">IT</option>
+                <option value="ECE">ECE</option>
+                <option value="EEE">EEE</option>
+                <option value="Mechanical">Mechanical</option>
+                <option value="Civil">Civil</option>
+            </select>
+
+
+            <select id="year" required>
+                <option value="" disabled selected>Choose a Year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+
+
+            <select id="event_name" required>
+                <option value="" disabled selected>Choose an Event</option>
+                <option value="Coding Contest">Coding Contest</option>
+                <option value="Hackathon">Hackathon</option>
+                <option value="Tech Talk">Tech Talk</option>
+                <option value="Robotics Workshop">Robotics Workshop</option>
+            </select>
+
+            <button type="button" class="add-student" onclick="addStudent()">Register</button>
+            <div>
+                <button onclick="window.location.href='students.html'" class="view-students">
+                    View Registered Students
+                </button>
+            </div>
+    
+        </form>
+    </div>
+    </div>
+
+    <script>
+        const API_GET = "https://bcxddr60v6.execute-api.us-east-1.amazonaws.com/get/GetStudents";
+        const API_CREATE = "https://bcxddr60v6.execute-api.us-east-1.amazonaws.com/dev/RegisterName";
+        const API_DELETE = "https://bcxddr60v6.execute-api.us-east-1.amazonaws.com/pos/RemoveStudent";
+
+        async function fetchStudents() {
+            const response = await fetch(API_GET);
+            const students = await response.json();
+            localStorage.setItem("students", JSON.stringify(students)); // Store data
+
+            const table = document.getElementById("studentsTable");
+            students.forEach(student => {
+                let row = table.insertRow();
+                row.insertCell(0).innerText = student.name;
+                row.insertCell(1).innerText = student.email;
+                row.insertCell(2).innerText = student.phone;
+                row.insertCell(3).innerText = student.college;
+                row.insertCell(4).innerText = student.department;
+                row.insertCell(5).innerText = student.year;
+                row.insertCell(6).innerText = student.event_name;
+
+                let deleteCell = row.insertCell(7);
+                let deleteButton = document.createElement("button");
+                deleteButton.innerText = "Remove";
+                deleteButton.onclick = () => removeStudent(student.registrationId);
+                deleteCell.appendChild(deleteButton);
+            });
+        }
+
+
+        async function addStudent() {
+            const studentData = {
+                registrationId: Date.now().toString(),
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                phone: document.getElementById("phone").value,
+                college: document.getElementById("college").value,
+                department: document.getElementById("department").value,
+                year: document.getElementById("year").value,
+                event_name: document.getElementById("event_name").value
+            };
+
+            const response = await fetch(API_CREATE, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(studentData)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            location.reload();
+        }
+
+        async function removeStudent(registrationId) {
+            if (!confirm("Are you sure you want to remove this student?")) return;
+
+            const response = await fetch(API_DELETE, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registrationId })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            location.reload();
+        }
+
+        fetchStudents();
+    </script>
+
+</body>
+</html>

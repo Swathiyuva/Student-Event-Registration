@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registered Students</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: lightblue; }
+        table { width: 80%; margin: 20px auto; border-collapse: collapse; background-color: white; }
+        th, td { padding: 10px; border: 1px solid black; }
+        th { background-color: darkred; color: white; }
+        button { background-color: red; color: white; padding: 5px; border: none; cursor: pointer;border-radius: 5px }
+    </style>
+</head>
+<body>
+
+    <h2>Registered Students</h2>
+    <table id="studentsTable">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>College</th>
+            <th>Department</th>
+            <th>Year</th>
+            <th>Event</th>
+            <th>Remove</th>
+        </tr>
+    </table>
+
+    <button onclick="window.location.href='index.html'"
+        style="background-color: rgb(223, 74, 74); padding: 10px; margin-top: 10px; border: none; cursor: pointer;">
+        Back to Registration
+    </button>
+
+    <script>
+        const API_GET = "https://bcxddr60v6.execute-api.us-east-1.amazonaws.com/get/GetStudents";
+        const API_DELETE = "https://bcxddr60v6.execute-api.us-east-1.amazonaws.com/pos/RemoveStudent";
+
+        async function fetchStudents() {
+            const response = await fetch(API_GET);
+            const students = await response.json();
+
+            const table = document.getElementById("studentsTable");
+
+            students.forEach(student => {
+                let row = table.insertRow();
+                row.insertCell(0).innerText = student.name;
+                row.insertCell(1).innerText = student.email;
+                row.insertCell(2).innerText = student.phone;
+                row.insertCell(3).innerText = student.college;
+                row.insertCell(4).innerText = student.department;
+                row.insertCell(5).innerText = student.year;
+                row.insertCell(6).innerText = student.event_name || "Not Assigned";
+
+                let deleteCell = row.insertCell(7);
+                let deleteButton = document.createElement("button");
+                deleteButton.innerText = "Remove";
+                deleteButton.onclick = () => removeStudent(student.registrationId);
+                deleteCell.appendChild(deleteButton);
+            });
+        }
+
+        async function removeStudent(registrationId) {
+            if (!confirm("Are you sure you want to remove this student?")) return;
+
+            const response = await fetch(API_DELETE, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ registrationId })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            location.reload(); 
+        }
+
+        fetchStudents();
+    </script>
+
+</body>
+</html>
